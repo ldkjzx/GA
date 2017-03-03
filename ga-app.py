@@ -52,16 +52,18 @@ from random import randint as _r
 
 
 # Configuration
-IMAGE_HEIGHT = 400
-IMAGE_WIDTH = 400
+
 
 GENE_VOLUME = 1000
-GENE_OFFSET = 30
+GENE_OFFSET = 100
 GENE_MUTATE = 50
-
 MAX_GENERATION = 100000
 
-
+TARGET_PATH = str(os.getcwd()+'\pic\Target.png')
+TARGET_IMAGE = Image.open(TARGET_PATH)
+IMAGE_HEIGHT = TARGET_IMAGE.size[0]
+IMAGE_WIDTH = TARGET_IMAGE.size[0]
+TARGET_PIXELS = [TARGET_IMAGE.getpixel((x,y)) for x in range(TARGET_IMAGE.size[0]) for y in range(TARGET_IMAGE.size[1])]
 
 
 def rmInRange(old_value, offset, minsize, maxsize): #公共方法：计算范围内随机偏移值
@@ -213,8 +215,32 @@ class Body(object):
 		for i in range(GENE_VOLUME):
 			mutate.gene.append(self.gene[i].mut_gene())
 
+	def getPixels(self):
+		temp_image = self.bodyCreation()
+		pixels = [temp_image.getpixel((x,y)) for x in range(temp_image.size[0]) for y in range(temp_image.size[1])]
+
+		return pixels
+
 class GodsHand(object): 
-	pass
+	def __init__(self, body):
+		self.body = body
+		self.pixels = body.getPixels()
+
+
+	def diff(self):
+		diff = 0
+		for i in range(len(TARGET_PIXELS)):
+			diff_r = abs(TARGET_PIXELS[i][0] - self.pixels[i][0])
+			diff_g = abs(TARGET_PIXELS[i][1] - self.pixels[i][1])
+			diff_b = abs(TARGET_PIXELS[i][2] - self.pixels[i][2])
+			diff = diff + diff_r + diff_b + diff_g
+
+			#print('differ =', diff)
+
+		return diff
+
+
+		
 
 ################################################
 def main():
@@ -222,7 +248,10 @@ def main():
 	
 	
 	Adam = Body().origin()
-	Adam.bodyCreation().save(os.getcwd()+'\pic\Adam.png')
+	#Adam.bodyCreation().save(os.getcwd()+'\pic\Adam.png')
+	print (time.time())
+	print(GodsHand(Adam).diff())
+	print (time.time())
 
 
 
