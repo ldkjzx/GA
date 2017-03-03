@@ -44,7 +44,7 @@ __author__ = 'Jarod Zheng'
 		* 抽样检查，每1000代获取适应性强个体打印出来
 '''
 
-import time, sys, os, argparse, copy
+import datetime, time, sys, os, argparse, copy
 
 from PIL import Image, ImageDraw
 from random import randint as _r
@@ -223,8 +223,9 @@ class Body(object):
 
 class GodsHand(object): 
 	def __init__(self, body):
-		self.body = body
+		self.parent = body
 		self.pixels = body.getPixels()
+		self.g = 0
 
 
 	def diff(self):
@@ -235,9 +236,37 @@ class GodsHand(object):
 			diff_b = abs(TARGET_PIXELS[i][2] - self.pixels[i][2])
 			diff = diff + diff_r + diff_b + diff_g
 
-			#print('differ =', diff)
-
 		return diff
+
+	def evolution(self):
+		while True:
+			if g > MAX_GENERATION:
+				break
+
+			self.child = self.parent	
+
+'''
+			child = parent.born_a_child()
+
+            child.mutate()
+
+            self.parent = parent
+            self.child = child
+
+            parent_diff = self.compare_pixel(parent.get_pixels())
+            child_diff = self.compare_pixel(child.get_pixels())
+
+            print("Loop:{} \t\t Score Parent:{} \t\t Child: {}".format(counter, parent_diff, child_diff))
+
+            if counter % self.save_pre_loop == 0:
+                parent.save_as_img(self.output_path, str(counter))
+
+            if child_diff < parent_diff:
+                parent = child
+
+            counter += 1
+'''
+
 
 
 		
@@ -249,9 +278,9 @@ def main():
 	
 	Adam = Body().origin()
 	#Adam.bodyCreation().save(os.getcwd()+'\pic\Adam.png')
-	print (time.time())
+	print (datetime.datetime.now())
 	print(GodsHand(Adam).diff())
-	print (time.time())
+	print (datetime.datetime.now())
 
 
 
