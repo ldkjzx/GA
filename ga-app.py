@@ -59,7 +59,8 @@ GENE_OFFSET = 100
 GENE_MUTATE = 50
 MAX_GENERATION = 100000
 
-TARGET_PATH = str(os.getcwd()+'\pic\Target.png')
+#TARGET_PATH = str(os.getcwd()+'\pic\Target.png')
+TARGET_PATH = str(os.getcwd()+'/pic/Target.png')
 TARGET_IMAGE = Image.open(TARGET_PATH)
 IMAGE_HEIGHT = TARGET_IMAGE.size[0]
 IMAGE_WIDTH = TARGET_IMAGE.size[0]
