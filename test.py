@@ -4,7 +4,7 @@
 """
 draw shapes and fill shap with transparent color and overlap them.
 """
- 
+import os
 from PIL import Image, ImageDraw
 from random import randint as _r
 
@@ -36,8 +36,12 @@ def main():
     #final = Image.alpha_composite(im, final)
 
 '''
-    im.save('/im2.png')
+    #im.save('/im2.png')
+
 
  
 if __name__ == '__main__':
     main()
+    print(os.path.abspath('.'))
+
+    print(os.path.join(os.path.abspath('.'), 'pic', 'target.png'))

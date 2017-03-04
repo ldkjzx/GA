@@ -4,17 +4,17 @@
 __author__ = 'Jarod Zheng'
 
 '''
-#Genetic Algorithm Application#
+#Genetic Algorithm#
 
 	Template/Target 
 		* 进化模版，指示进化方向和最终形态
 
 	Gene
-		* 圆形
-		* 圆心位置 xy，半径 r，颜色 rbg，透明度 30%
+		* 三角形
+		* 三点位置（x，y），颜色 rbga
 
-	Individual 
-		* 由100个Gene组成，编号0-99号圆形
+	Body 
+		* 由1000个Gene组成
 
 	Population 
 		* 由20个继承个体+3个变异个体组成
@@ -52,27 +52,27 @@ from random import randint as _r
 
 
 # Configuration
+GENE_VOLUME = 1000	# the volume of gene in one single body 
+GENE_OFFSET = 100	# the max offset range of child's gene based on parent's
+GENE_MUTATE = 100	# the max offset range of mutated gene based on parent's
+MAX_GENERATION = 1000	# the maximun generations in the world
+SAMPLE_RATE = 50	# how many generations to get one boy print out
 
-
-GENE_VOLUME = 1000
-GENE_OFFSET = 100
-GENE_MUTATE = 50
-MAX_GENERATION = 100000
-
-#TARGET_PATH = str(os.getcwd()+'\pic\Target.png')
-TARGET_PATH = str(os.getcwd()+'/pic/Target.png')
+# Evolution Taget
+TARGET_PATH = os.path.join(os.path.abspath('.'), 'pic', 'Target.png')
 TARGET_IMAGE = Image.open(TARGET_PATH)
 IMAGE_HEIGHT = TARGET_IMAGE.size[0]
 IMAGE_WIDTH = TARGET_IMAGE.size[0]
 TARGET_PIXELS = [TARGET_IMAGE.getpixel((x,y)) for x in range(TARGET_IMAGE.size[0]) for y in range(TARGET_IMAGE.size[1])]
 
 
-def rmInRange(old_value, offset, minsize, maxsize): #公共方法：计算范围内随机偏移值
+# Public Function: get random offset value based on the given value
+def rmInRange(old_value, offset, minsize, maxsize): 
 	new_value = old_value + _r(-offset, offset)
 	new_value = max(minsize, min(new_value, maxsize))
 	return new_value
 
-
+# Basic Element of Gene: Point
 class Point(object):
 	def __init__(self, x=0, y=0):
 		self.x = x
@@ -82,27 +82,26 @@ class Point(object):
 		rm_point = Point()
 		rm_point.x = _r(0, IMAGE_WIDTH)
 		rm_point.y = _r(0, IMAGE_HEIGHT)
-
+		#rm_point.x = rmInRange(200, GENE_OFFSET, 0, IMAGE_WIDTH)
+		#rm_point.y = rmInRange(200, GENE_OFFSET, 0, IMAGE_HEIGHT)
 		return rm_point
 
 	def cld_point(self):
 		cld_point = Point()
 		cld_point.x = rmInRange(self.x, GENE_OFFSET, 0, IMAGE_WIDTH)
 		cld_point.y = rmInRange(self.y, GENE_OFFSET, 0, IMAGE_HEIGHT)
-
 		return cld_point
 
 	def mut_point(self):
 		mut_point = Point()
 		mut_point.x = rmInRange(self.x, GENE_MUTATE, 0, IMAGE_WIDTH)
 		mut_point.y = rmInRange(self.y, GENE_MUTATE, 0, IMAGE_HEIGHT)
-
 		return mut_point
 
 	def getPoint(self):
 		return (self.x, self.y)
 
-
+# Basic Element of Gene: Color
 class Color(object):
 	def __init__(self, r=255, g=255, b=255, a=255):
 		self.r = r
@@ -116,30 +115,25 @@ class Color(object):
 		rm_color.g = _r(0,255)
 		rm_color.b = _r(0,255)
 		#rm_color.a = _r(85,170)
-
 		return rm_color
 
 	def cld_color(self):
 		cld_color = Color()
-		for attr in ['r', 'g', 'b', 'a']:
-			cld_color.attr = rmInRange(getattr(self, attr), GENE_OFFSET, 0, 255)
-
+		for attr in ['r', 'g', 'b']:
+			setattr(cld_color, attr, rmInRange(getattr(self, attr), GENE_OFFSET, 0, 255))
 		return cld_color
 
 	def mut_color(self):
 		mut_color = Color()
-		for attr in ['r', 'g', 'b', 'a']:
-			mut_color.attr = rmInRange(getattr(self, attr), GENE_OFFSET, 0, 255)
-
+		for attr in ['r', 'g', 'b']:
+			setattr(mut_color, attr, rmInRange(getattr(self, attr), GENE_OFFSET, 0, 255))
 		return mut_color
-
 
 	def getColor(self):
 		return (self.r, self.b, self.g, self.a)
 
 
-
-
+# Build Gene with basic Elements: Triangles
 class Gene(object):
 	def __init__(self):
 		self.point_1 = Point()
@@ -155,7 +149,6 @@ class Gene(object):
 		#o_gene.point_2 = Point().random()
 		#o_gene.point_3 = Point().random()
 		o_gene.color = Color().random()
-
 		return o_gene
 
 	def cld_gene(self):
@@ -164,7 +157,6 @@ class Gene(object):
 		cld_gene.point_2 = self.point_2.cld_point()
 		cld_gene.point_3 = self.point_3.cld_point()
 		cld_gene.color = self.color.cld_color()
-	
 		return cld_gene
 
 	def mut_gene(self):
@@ -183,7 +175,7 @@ class Gene(object):
 		draw.polygon([self.point_1.getPoint(), self.point_2.getPoint(), self.point_3.getPoint()], fill=self.color.getColor())
 
 
-
+# Build Body based on Genes
 class Body(object):
 	def __init__(self):
 		self.gene = []
@@ -222,10 +214,12 @@ class Body(object):
 
 		return pixels
 
+
+# Create evolution rules and trigger the generations
 class GodsHand(object): 
 	def __init__(self, body):
 		self.parent = body
-		self.pixels = body.getPixels()
+		self.pixels = self.parent.getPixels()
 		self.g = 0
 
 
@@ -241,49 +235,45 @@ class GodsHand(object):
 
 	def evolution(self):
 		while True:
-			if g > MAX_GENERATION:
+			if self.g > MAX_GENERATION:
 				break
 
-			self.child = self.parent	
+			self.child = self.parent.child()
+			parent_diff = GodsHand(self.parent).diff()
+			child_diff = GodsHand(self.child).diff()
 
-'''
-			child = parent.born_a_child()
+			if child_diff < parent_diff:
+				self.parent = self.child
+			
+			if self.g % SAMPLE_RATE == 0:
+				print('Generation: %d' % self.g)
+				print('Completed: %d / %d' % (self.g, MAX_GENERATION))
+				print('Parent Difference: %d ==> Child Difference: %d' % (parent_diff, child_diff))
+				self.parent.bodyCreation().save(os.path.join(os.path.abspath('.'), 'pic', '%s.png' % self.g))
 
-            child.mutate()
-
-            self.parent = parent
-            self.child = child
-
-            parent_diff = self.compare_pixel(parent.get_pixels())
-            child_diff = self.compare_pixel(child.get_pixels())
-
-            print("Loop:{} \t\t Score Parent:{} \t\t Child: {}".format(counter, parent_diff, child_diff))
-
-            if counter % self.save_pre_loop == 0:
-                parent.save_as_img(self.output_path, str(counter))
-
-            if child_diff < parent_diff:
-                parent = child
-
-            counter += 1
-'''
+			self.g += 1
 
 
-
-		
 
 ################################################
 def main():
 
 	
 	
-	Adam = Body().origin()
-	#Adam.bodyCreation().save(os.getcwd()+'\pic\Adam.png')
+	Adam = Body().origin()	# Create the original body Adam
+	GodsHand(Adam).evolution()	# Put Adam in God's Hand and start the evolution
+
+	'''
+	Adam.bodyCreation().save(os.getcwd()+'/pic/Adam.png')
+	Adam.child().bodyCreation().save(os.getcwd()+'/pic/Adam2.png')
+	Adam.child().child().bodyCreation().save(os.getcwd()+'/pic/Adam3.png')
+	'''
+	# 差异值计算速度
+	'''
 	print (datetime.datetime.now())
 	print(GodsHand(Adam).diff())
 	print (datetime.datetime.now())
-
-
+	'''
 
 
 if __name__=='__main__':

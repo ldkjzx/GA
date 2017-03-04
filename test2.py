@@ -5,6 +5,7 @@
 draw shapes and fill shap with transparent color and overlap them.
 """
  
+import os
 from PIL import Image, ImageDraw
 from random import randint as _r
 
