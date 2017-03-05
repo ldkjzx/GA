@@ -53,10 +53,10 @@ from random import randint as _r
 
 # Configuration
 GENE_VOLUME = 1000	# the volume of gene in one single body 
-GENE_OFFSET = 100	# the max offset range of child's gene based on parent's
+GENE_OFFSET = 20	# the max offset range of child's gene based on parent's
 GENE_MUTATE = 100	# the max offset range of mutated gene based on parent's
-MAX_GENERATION = 1000	# the maximun generations in the world
-SAMPLE_RATE = 50	# how many generations to get one boy print out
+MAX_GENERATION = 100000	# the maximun generations in the world
+SAMPLE_RATE = 10000	# how many generations to get one boy print out
 
 # Evolution Taget
 TARGET_PATH = os.path.join(os.path.abspath('.'), 'pic', 'Target.png')
@@ -138,14 +138,14 @@ class Gene(object):
 	def __init__(self):
 		self.point_1 = Point()
 		self.point_2 = Point()
-		self.point_3 = Point()
+		#self.point_3 = Point()
 		self.color = Color()
 
 	def origin(self):
 		o_gene = Gene()
 		o_gene.point_1 = Point().random()
 		o_gene.point_2 = o_gene.point_1.cld_point()
-		o_gene.point_3 = o_gene.point_2.cld_point()
+		#o_gene.point_3 = o_gene.point_2.cld_point()
 		#o_gene.point_2 = Point().random()
 		#o_gene.point_3 = Point().random()
 		o_gene.color = Color().random()
@@ -155,7 +155,7 @@ class Gene(object):
 		cld_gene = Gene()
 		cld_gene.point_1 = self.point_1.cld_point()
 		cld_gene.point_2 = self.point_2.cld_point()
-		cld_gene.point_3 = self.point_3.cld_point()
+		#cld_gene.point_3 = self.point_3.cld_point()
 		cld_gene.color = self.color.cld_color()
 		return cld_gene
 
@@ -163,7 +163,7 @@ class Gene(object):
 		mut_gene = Gene()
 		mut_gene.point_1 = self.point_1.mut_point()
 		mut_gene.point_2 = self.point_2.mut_point()
-		mut_gene.point_3 = self.point_3.mut_point()
+		#mut_gene.point_3 = self.point_3.mut_point()
 		mut_gene.color = self.color.mut_color()
 	
 		return mut_gene
@@ -185,7 +185,7 @@ class Body(object):
 		draw = ImageDraw.Draw(temp_body)
 
 		for i in range(GENE_VOLUME):
-			draw.polygon([self.gene[i].point_1.getPoint(), self.gene[i].point_2.getPoint(), self.gene[i].point_3.getPoint()], fill=self.gene[i].color.getColor())
+			draw.line((self.gene[i].point_1.getPoint(), self.gene[i].point_2.getPoint()), fill=self.gene[i].color.getColor())
 
 		return temp_body
 
@@ -245,10 +245,14 @@ class GodsHand(object):
 			if child_diff < parent_diff:
 				self.parent = self.child
 			
-			if self.g % SAMPLE_RATE == 0:
+			if self.g % 100 == 0:
 				print('Generation: %d' % self.g)
 				print('Completed: %d / %d' % (self.g, MAX_GENERATION))
 				print('Parent Difference: %d ==> Child Difference: %d' % (parent_diff, child_diff))
+				print (datetime.datetime.now())
+				print ('-----------------------------------------------')
+			
+			if self.g % SAMPLE_RATE == 0:
 				self.parent.bodyCreation().save(os.path.join(os.path.abspath('.'), 'pic', '%s.png' % self.g))
 
 			self.g += 1
